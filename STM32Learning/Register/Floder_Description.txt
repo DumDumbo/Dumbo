@@ -1,0 +1,12 @@
+1、Light_up_a_LED
+	通过配置寄存器方式点亮LED灯
+2、Beep
+	通过寄存器方式使蜂鸣器发出响声（内有延时函数示例）
+3、Register Strcture Packing
+	对GPIO以及RCC寄存器进行封装，并点亮LED灯
+4、Systick_Delay
+	使用滴答寄存器（内置24位向下计数器）实现精准的延时（ms级/us级）
+5、Clock_Selection
+	通过寄存器的方式将stm32f103c8t6从默认8MHZ时钟改成72MHZ
+6、Serial
+	通过寄存器的方法实现串口通信的收发

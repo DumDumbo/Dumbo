@@ -1,0 +1,17 @@
+Dependencies for Project 'Clock_Select', Target 'Target 1': (DO NOT MODIFY !)
+F (.\main.c)(0x64B67E32)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections-I D:\program_bags\C_program\DIY_STM32F103C8T6\learning_project\Register\Clock_Selection\RTE-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Include"-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_MD-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+I (main.h)(0x64B6554A)
+I (Clock_select.h)(0x64B64D5E)
+I (GPIO.h)(0x64B65029)
+I (SysTick.h)(0x64B64F39)
+F (.\startup_stm32f10x_md.s)(0x4D783CD2)(--cpu Cortex-M3 -g --apcs=interwork -I D:\program_bags\C_program\DIY_STM32F103C8T6\learning_project\Register\Clock_Selection\RTE-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Include"-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\CMSIS\Include"--pd "__UVISION_VERSION SETA 518" --pd "STM32F10X_MD SETA 1"--list .\listings\startup_stm32f10x_md.lst --xref -o .\objects\startup_stm32f10x_md.o --depend .\objects\startup_stm32f10x_md.d)
+F (.\Clock_select.c)(0x64B64DC0)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections-I D:\program_bags\C_program\DIY_STM32F103C8T6\learning_project\Register\Clock_Selection\RTE-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Include"-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_MD-o .\objects\clock_select.o --omf_browse .\objects\clock_select.crf --depend .\objects\clock_select.d)
+I (Clock_select.h)(0x64B64D5E)
+F (.\main.h)(0x64B6554A)()
+F (.\Clock_select.h)(0x64B64D5E)()
+F (.\GPIO.h)(0x64B65029)()
+F (.\Module_Init.c)(0x64B655A1)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections-I D:\program_bags\C_program\DIY_STM32F103C8T6\learning_project\Register\Clock_Selection\RTE-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Include"-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_MD-o .\objects\module_init.o --omf_browse .\objects\module_init.crf --depend .\objects\module_init.d)
+I (main.h)(0x64B6554A)
+I (Clock_select.h)(0x64B64D5E)
+I (GPIO.h)(0x64B65029)
+I (SysTick.h)(0x64B64F39)

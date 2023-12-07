@@ -1,0 +1,9 @@
+--cpu Cortex-M3
+".\objects\main.o"
+".\objects\startup_stm32f10x_md.o"
+".\objects\clock_select.o"
+".\objects\module_init.o"
+--strict --scatter ".\Objects\Clock_Select.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Listings\Clock_Select.map" -o .\Objects\Clock_Select.axf
