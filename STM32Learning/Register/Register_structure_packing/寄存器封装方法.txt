@@ -1,0 +1,6 @@
+一、使用#define单一封装
+	例如文件 Light_up_a_LED 中的light.h所示
+
+二、使用关键字typedef struct结构体封装
+	例如本文 GPIOx.h & RCC.h 所示
+三

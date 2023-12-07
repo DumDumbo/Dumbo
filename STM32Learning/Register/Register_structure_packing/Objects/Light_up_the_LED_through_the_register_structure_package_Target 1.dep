@@ -1,0 +1,9 @@
+Dependencies for Project 'Light_up_the_LED_through_the_register_structure_package', Target 'Target 1': (DO NOT MODIFY !)
+F (.\main.c)(0x645FC752)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections-I D:\program_bags\C_program\DIY_STM32F103C8T6\learning_project\Register\Register_structure_packing\RTE-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Include"-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_MD-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+I (main.h)(0x645FB4BC)
+I (GPIOx.h)(0x6460A3C8)
+I (RCC.h)(0x645FC46F)
+F (D:\个人资料\STM32and电机资料\STM32\3-STM32官方资料\STM32F10x_StdPeriph_Lib_V3.5.0\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\arm\startup_stm32f10x_md.s)(0x4D783CD2)(--cpu Cortex-M3 -g --apcs=interwork -I D:\program_bags\C_program\DIY_STM32F103C8T6\learning_project\Register\Register_structure_packing\RTE-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Include"-I "D:\Software I downloaded\keil5_mdk\keil5_mdk_install\ARM\CMSIS\Include"--pd "__UVISION_VERSION SETA 518" --pd "STM32F10X_MD SETA 1"--list .\listings\startup_stm32f10x_md.lst --xref -o .\objects\startup_stm32f10x_md.o --depend .\objects\startup_stm32f10x_md.d)
+F (.\GPIOx.h)(0x6460A3C8)()
+F (.\RCC.h)(0x645FC46F)()
+F (.\main.h)(0x645FB4BC)()
