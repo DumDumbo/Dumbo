@@ -1,0 +1,10 @@
+--cpu Cortex-M3
+".\objects\main.o"
+".\objects\startup_stm32f10x_md.o"
+".\objects\module_init.o"
+".\objects\usart1_init.o"
+".\objects\led.o"
+--strict --scatter ".\Objects\Serial.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Listings\Serial.map" -o .\Objects\Serial.axf
