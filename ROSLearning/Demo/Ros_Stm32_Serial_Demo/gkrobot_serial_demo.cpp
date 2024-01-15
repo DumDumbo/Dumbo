@@ -5,7 +5,7 @@
  * 
  * @date：2023/12/9
  * 
- * @author: YYY (From GZIST)
+ * @author: YYY
  *                     
  * @details:  本文件通过UART串口通信方式，实现ROS系统与下位机STM32F407IIH6的
  *                       全双工异步串行通信。其中ROS向Stm32发送速度消息以及被解析的二维码消息。
