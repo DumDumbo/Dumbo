@@ -1,19 +1,25 @@
 /****************************************************************************************
  * @brief:  本文件为ROS系统与下位机STM32全双工异步串行通信例程
  * 
- * @version: 1.0
+ * @version: 1.3（1.2, 1.1 , 1.0）
  * 
  * @date：2023/12/9
  * 
- * @author: YTY (From GZIST)
+ * @author: YYY (From GZIST)
  *                     
  * @details:  本文件通过UART串口通信方式，实现ROS系统与下位机STM32F407IIH6的
- *            全双工异步串行通信例程。其中ROS向Stm32发送速度消息以及被解析的二维码消息。
- *            Stm32向ROS发送小车基于电机转速合成后的XYZ方向速度（单位mm/s），
- *            并发布里程计话题（速度单位m/s）
- * 
- * @note: 暂无修改记录！
-****************************************************************************************/
+ *                       全双工异步串行通信。其中ROS向Stm32发送速度消息以及被解析的二维码消息。
+ *                       Stm32向ROS发送小车基于电机转速合成后的XYZ方向速度（单位mm/s），
+ *                       并发布里程计话题（速度单位m/s）
+ *
+ * @note: 1.1修改：修改了serial_data_pub()函数中关于ros_pos.X(Y)(Z)的算法公式
+ *                 1.2修改：开启了publish_odom()函数中的协方差矩阵判断，用于使用robot_pose_ekf包
+ *                                     进行机器人姿态判断，并其会发布odom->base_footprint的tf变换
+ *                 1.3修改：将下位机传输的轮式里程计信息发布至/odom_wheel话题，代替了原来直接发布
+ *                                      至/odom话题。方便用户后续对/odom信息的优化（譬如想融合IMU消息与轮式
+ *                                      里程计消息，再将优化后的位姿消息通过另一节点发布至/odom中）
+ *                                      已将/odom的“frame_id、话题名称”修改为/odom_wheel
+ ****************************************************************************************/
 
 #include "gkrobot_serial_demo.h"
 #include "Quaternion_Solution.h"
@@ -74,10 +80,10 @@ void turn_on_robot::gkrobot_Init()
   //private_nh.param()入口参数分别对应：参数服务器上的名称  参数变量名  初始值
   private_nh.param<std::string>("usart_port_name",  usart_port_name,  "/dev/ttyUSB0"); //Fixed serial port number //固定串口号
   private_nh.param<int>        ("serial_baud_rate", serial_baud_rate, 115200); //Communicate baud rate 115200 to the lower machine //和下位机通信波特率115200
-  private_nh.param<std::string>("odom_frame_id",    odom_frame_id,    "odom_combined");      //The odometer topic corresponds to the parent TF coordinate //里程计话题对应父TF坐标
+  private_nh.param<std::string>("odom_frame_id",    odom_frame_id,    "odom_wheel");      //The odometer topic corresponds to the parent TF coordinate //里程计话题对应父TF坐标
   private_nh.param<std::string>("robot_frame_id",   robot_frame_id,   "base_footprint"); //The odometer topic corresponds to sub-TF coordinates //里程计话题对应子TF坐标
   
-  odom_publisher = n.advertise<nav_msgs::Odometry>("odom", 50); //Create the odometer topic publisher //创建里程计话题发布者
+  odom_publisher = n.advertise<nav_msgs::Odometry>("odom_wheel", 50); //Create the odometer topic publisher //创建里程计话题发布者
   
   //Set the velocity control command callback function
   //速度控制命令订阅回调函数设置
@@ -271,44 +277,49 @@ float turn_on_robot::Odom_Trans(uint8_t Data_High,uint8_t Data_Low)
  * @name:   void turn_on_robot::Publish_Odom()
  * 
  * @brief:	里程计数据发布函数
- *          发布里程计话题，包含位置、姿态、三轴速度、绕三轴角速度、TF父子坐标、协方差矩阵
+ *                  发布里程计话题，包含位置、姿态、三轴速度、绕三轴角速度、TF父子坐标、协方差矩阵
  * 
 *********/
 void turn_on_robot::Publish_Odom()
 {
-    //Convert the Z-axis rotation Angle into a quaternion for expression 
-    //把Z轴转角转换为四元数进行表达
-    geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(Robot_Pos.Z);
+  //Convert the Z-axis rotation Angle into a quaternion for expression 
+  //把Z轴转角转换为四元数进行表达
+  geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(Robot_Pos.Z);
 
-    nav_msgs::Odometry odom; //Instance the odometer topic data //实例化里程计话题数据
-    odom.header.stamp = ros::Time::now(); 
-    odom.header.frame_id = odom_frame_id; // Odometer TF parent coordinates //里程计TF父坐标
-    odom.pose.pose.position.x = Robot_Pos.X; //Position //位置
-    odom.pose.pose.position.y = Robot_Pos.Y;
-    odom.pose.pose.position.z = Robot_Pos.Z;
-    odom.pose.pose.orientation = odom_quat; //Posture, Quaternion converted by Z-axis rotation //姿态，通过Z轴转角转换的四元数
+  //里程计消息赋值
+  nav_msgs::Odometry odom; //Instance the odometer topic data //实例化里程计话题数据
+  odom.header.stamp = ros::Time::now(); 
+  odom.header.frame_id = odom_frame_id; // Odometer TF parent coordinates //里程计TF父坐标
+  odom.pose.pose.position.x = Robot_Pos.X; //Position //位置
+  odom.pose.pose.position.y = Robot_Pos.Y;
+  odom.pose.pose.position.z = Robot_Pos.Z;
+  odom.pose.pose.orientation = odom_quat; //Posture, Quaternion converted by Z-axis rotation //姿态，通过Z轴转角转换的四元数
+  
+  odom.child_frame_id = robot_frame_id; // Odometer TF subcoordinates //里程计TF子坐标
+  odom.twist.twist.linear.x =  Robot_Vel.X; //Speed in the X direction //X方向速度
+  odom.twist.twist.linear.y =  Robot_Vel.Y; //Speed in the Y direction //Y方向速度
+  odom.twist.twist.angular.z = Robot_Vel.Z; //Angular velocity around the Z axis //绕Z轴角速度 
 
-    odom.child_frame_id = robot_frame_id; // Odometer TF subcoordinates //里程计TF子坐标
-    odom.twist.twist.linear.x =  Robot_Vel.X; //Speed in the X direction //X方向速度
-    odom.twist.twist.linear.y =  Robot_Vel.Y; //Speed in the Y direction //Y方向速度
-    odom.twist.twist.angular.z = Robot_Vel.Z; //Angular velocity around the Z axis //绕Z轴角速度 
+  //There are two types of this matrix, which are used when the robot is at rest and when it is moving.Extended Kalman Filtering officially provides 2 matrices for the robot_pose_ekf feature pack
+  //这个矩阵有两种，分别在机器人静止和运动的时候使用。扩展卡尔曼滤波官方提供的2个矩阵，用于robot_pose_ekf功能包
+  if(Robot_Vel.X== 0 && Robot_Vel.Y== 0 && Robot_Vel.Z== 0)
+  {
+    // If the velocity is zero, it means that the error of the encoder will be relatively small, and the data of the encoder will be considered more reliable
+    // 如果velocity是零，说明编码器的误差会比较小，认为编码器数据更可靠
+    memcpy(&odom.pose.covariance, odom_pose_covariance2, sizeof(odom_pose_covariance2)),
+    memcpy(&odom.twist.covariance, odom_twist_covariance2, sizeof(odom_twist_covariance2));
+   } 
+  else
+  {
+    //If the velocity of the trolley is non-zero, considering the sliding error that may be brought by the encoder in motion, the data of IMU is considered to be more reliable
+     //如果小车velocity非零，考虑到运动中编码器可能带来的滑动误差，认为imu的数据更可靠
+     memcpy(&odom.pose.covariance, odom_pose_covariance, sizeof(odom_pose_covariance)),
+    memcpy(&odom.twist.covariance, odom_twist_covariance, sizeof(odom_twist_covariance));       
+  
+  }
 
-    //There are two types of this matrix, which are used when the robot is at rest and when it is moving.Extended Kalman Filtering officially provides 2 matrices for the robot_pose_ekf feature pack
-    //这个矩阵有两种，分别在机器人静止和运动的时候使用。扩展卡尔曼滤波官方提供的2个矩阵，用于robot_pose_ekf功能包
-    // if(Robot_Vel.X== 0 && Robot_Vel.Y== 0 && Robot_Vel.Z== 0)
-    // {
-    //   //If the velocity is zero, it means that the error of the encoder will be relatively small, and the data of the encoder will be considered more reliable
-    //   //如果velocity是零，说明编码器的误差会比较小，认为编码器数据更可靠
-    //   memcpy(&odom.pose.covariance, odom_pose_covariance2, sizeof(odom_pose_covariance2)),
-    //   memcpy(&odom.twist.covariance, odom_twist_covariance2, sizeof(odom_twist_covariance2));
-      // else
-      // //If the velocity of the trolley is non-zero, considering the sliding error that may be brought by the encoder in motion, the data of IMU is considered to be more reliable
-      // //如果小车velocity非零，考虑到运动中编码器可能带来的滑动误差，认为imu的数据更可靠
-      // memcpy(&odom.pose.covariance, odom_pose_covariance, sizeof(odom_pose_covariance)),
-      // memcpy(&odom.twist.covariance, odom_twist_covariance, sizeof(odom_twist_covariance));       
-    // }
-     
-    odom_publisher.publish(odom); //Pub odometer topic //发布里程计话题
+  odom_publisher.publish(odom); //Pub odometer topic //发布里程计话题
+  
 }
 
 
@@ -364,7 +375,7 @@ bool turn_on_robot::serial_data_from_stm32()
         Receive_Data.Sensor_Str.Status = Receive_Data.rx[2]; //set aside //预留位
         
         Robot_Vel.X = Odom_Trans(Receive_Data.rx[3],Receive_Data.rx[4]); //Get the speed of the moving chassis in the X direction //获取运动底盘X方向速度
-
+        // std::cout << Robot_Vel.X << std::endl;  输出信息
         Robot_Vel.Y = Odom_Trans(Receive_Data.rx[5],Receive_Data.rx[6]); //Get the speed of the moving chassis in the Y direction, The Y speed is only valid in the omnidirectional mobile robot chassis
                                                                           //获取运动底盘Y方向速度，Y速度仅在全向移动机器人底盘有效
         Robot_Vel.Z = Odom_Trans(Receive_Data.rx[7],Receive_Data.rx[8]); //Get the speed of the moving chassis in the Z direction //获取运动底盘Z方向速度   
@@ -398,9 +409,12 @@ void turn_on_robot::serial_data_pub()
                                    //通过串口读取并校验下位机发送过来的数据，然后数据转换为国际单位
     {
       //根据速度积分计算位移
-      Robot_Pos.X+=(Robot_Vel.X * cos(Robot_Pos.Z) - Robot_Vel.Y * sin(Robot_Pos.Z)) * Sampling_Time; //Calculate the displacement in the X direction, unit: m //计算X方向的位移，单位：m
-      Robot_Pos.Y+=(Robot_Vel.X * sin(Robot_Pos.Z) + Robot_Vel.Y * cos(Robot_Pos.Z)) * Sampling_Time; //Calculate the displacement in the Y direction, unit: m //计算Y方向的位移，单位：m
-      Robot_Pos.Z+=Robot_Vel.Z * Sampling_Time; //The angular displacement about the Z axis, in rad //绕Z轴的角位移，单位：rad 
+      // Robot_Pos.X+=(Robot_Vel.X * cos(Robot_Pos.Z) - Robot_Vel.Y * sin(Robot_Pos.Z)) * Sampling_Time; //Calculate the displacement in the X direction, unit: m //计算X方向的位移，单位：m
+      // Robot_Pos.Y+=(Robot_Vel.X * sin(Robot_Pos.Z) + Robot_Vel.Y * cos(Robot_Pos.Z)) * Sampling_Time; //Calculate the displacement in the Y direction, unit: m //计算Y方向的位移，单位：m
+      // Robot_Pos.Z+=Robot_Vel.Z * Sampling_Time; //The angular displacement about the Z axis, in rad //绕Z轴的角位移，单位：rad 
+      Robot_Pos.X+= Robot_Vel.X *Sampling_Time;
+      Robot_Pos.Y+= Robot_Vel.Y *Sampling_Time;
+      Robot_Pos.Z+=Robot_Vel.Z *Sampling_Time;
       Publish_Odom();      //Pub the speedometer topic //发布里程计话题
 
       _Last_Time = _Now; //Record the time and use it to calculate the time interval //记录时间，用于计算时间间隔
