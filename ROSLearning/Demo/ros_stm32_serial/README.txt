@@ -1,0 +1,1 @@
+ros_stm32_serial 文件夹为可以直接使用的ROS melodic 版本的通信功能包例程
