@@ -100,7 +100,7 @@ typedef struct _RECEIVE_DATA_
 class robot
 {
 	public:
-		void robot_Init();  			//Constructor //构造函数 //初始化相关参数
+		robot();  			//Constructor //构造函数 //初始化相关参数
 		serial::Serial Stm32_Serial; 	//Declare a serial object //声明串口对象 
 		void serial_ros2stm32();		//Sending data //ROS向Stm32发送数据函数
 		void serial_data_pub();			//Receiving data and pub //将接收到的数据按要求发布话题
@@ -123,6 +123,7 @@ class robot
 		//Define the related variables //定义相关变量
         string usart_port_name;		//变量//串口名称
         int serial_baud_rate;     	//变量///串口通信波特率
+	 	short  linearX, linearY, angularZ;  //速度变量
 
 		//实例化对象
         RECEIVE_DATA Receive_Data; //串口接收数据结构体
