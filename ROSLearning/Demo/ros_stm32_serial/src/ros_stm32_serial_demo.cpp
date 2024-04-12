@@ -18,24 +18,14 @@
 #include "ros_stm32_serial_demo.h"
 
 
-
 /*******
- * @brief:	全局变量声明
- * 			    Global Variable Declaration
-*********/
-static short  linearX, linearY, angularZ;  
-
-
-
-/*******
- * @brief:	主函数，ROS初始化，通过turn_on_robot类创建Robot_control对象并自动调用构造函数初始化
- * 			    The main function, ROS initialization, creates the Robot_control object through the Turn_on_robot class and automatically calls the constructor initialization
+ * @brief:	主函数，ROS初始化
+ * 			 
 *********/
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "ros_stm32_serial_demo"); //ROS initializes and sets the node name //ROS初始化 并设置节点名称 
   robot Robot_Control; //Instantiate an object //实例化一个对象
-  Robot_Control.robot_Init(); //进行机器人相关参数初始化
 
   // 为两个函数创建线程  
   std::thread data_pub_thread(&robot::serial_data_pub, &Robot_Control);
@@ -51,31 +41,30 @@ int main(int argc, char** argv)
 
 
 /*******
- * @name:   void robot::robot_Init()
+ * @name:   void robot::robot()
  * 
- * @brief:  构造函数, 只执行一次，用于初始化
- * 			    Constructor, executed only once, for initialization
+ * @brief:   构造函数
+
 *********/
-void robot::robot_Init()
+robot::robot():Cmd_Vel_Sub(n.subscribe("cmd_vel", 1, &robot::Cmd_Vel_Callback, this)),linearX(0),linearY(0),angularZ(0)
 {
   //Clear the data
-  //清空数据
+  //清空结构体数据
   memset(&Robot_Vel, 0, sizeof(Robot_Vel));
   memset(&Send_Data, 0, sizeof(Send_Data));
 
   ros::NodeHandle private_nh("~"); //Create a node handle //创建节点句柄
   //The private_nh.param() entry parameter corresponds to the initial value of the name of the parameter variable on the parameter server
   //private_nh.param()入口参数分别对应：参数服务器上的名称  参数变量名  初始值
-  private_nh.param<std::string>("usart_port_name",  usart_port_name,  "/dev/ttyUSB0"); //Fixed serial port number //固定串口号
+  private_nh.param<std::string>("usart_port_name",  usart_port_name,  "/dev/USBTTL"); //Fixed serial port number //固定串口号
   private_nh.param<int>        ("serial_baud_rate", serial_baud_rate, 115200); //Communicate baud rate 115200 to the lower machine //和下位机通信波特率115200
  
-  serial_data_publisher =  n.advertise<ros_stm32_serial::serial_topic_msgs>("serial_data",50);
+  serial_data_publisher =  n.advertise<ros_stm32_serial::serial_topic_msgs>("serial_data",1);
   
-  //Set the velocity control command callback function
-  //速度控制命令订阅回调函数设置
-  Cmd_Vel_Sub  = n.subscribe("cmd_vel", 1, &robot::Cmd_Vel_Callback, this);  //缓存：说明了缓存几条消息，1条消息有多少字节看用户自定义
+  //速度话题订阅(已在构造函数初始化列表写入)
 
-  ROS_INFO_STREAM("Data ready"); //Prompt message //提示信息
+  //Prompt message //提示信息(绿色字体)
+  ROS_INFO_STREAM("\033[1;32mros_stm32_serial_demo node Initialized \033[0m"); 
   
   try
   { 
@@ -88,11 +77,11 @@ void robot::robot_Init()
   }
   catch (serial::IOException& e)
   {
-    ROS_ERROR_STREAM("gkrobot can not open serial port,Please check the serial port cable! "); //If opening the serial port fails, an error message is printed //如果开启串口失败，打印错误信息
+    ROS_ERROR_STREAM("robot can not open serial port,Please check the serial port cable! "); //If opening the serial port fails, an error message is printed //如果开启串口失败，打印错误信息
   }
   if(Stm32_Serial.isOpen())
   {
-    ROS_INFO_STREAM("gkrobot serial port opened"); //Serial port opened successfully //串口开启成功提示
+    ROS_INFO_STREAM("\033[1;32mrobot serial port opened  \033[0m"); //Serial port opened successfully //串口开启成功提示
   }
 }
 
